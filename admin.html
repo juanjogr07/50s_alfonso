@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Generador de Invitaciones</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #C9A84C; --gold-light: #F0D080; --navy: #0D1B2A;
+      --navy-mid: #1A2E44; --cream: #FDF6E3; --champagne: #F7E7CE;
+    }
+    body { font-family: 'Montserrat', sans-serif; background: var(--navy); color: var(--cream); min-height: 100vh; }
+
+    header {
+      background: linear-gradient(135deg, var(--navy-mid), var(--navy));
+      border-bottom: 1px solid rgba(201,168,76,0.3);
+      padding: 24px 32px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    header span { font-size: 12px; color: rgba(201,168,76,0.5); letter-spacing: 3px; text-transform: uppercase; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+    .card {
+      background: rgba(201,168,76,0.05);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 8px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .card-desc { font-size: 13px; color: rgba(253,246,227,0.5); margin-bottom: 24px; }
+
+    /* Config fields */
+    .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+    input, textarea {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 4px;
+      padding: 10px 14px;
+      color: var(--cream);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      width: 100%;
+      transition: border-color 0.3s;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* CSV area */
+    .csv-area {
+      display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;
+    }
+    .csv-drop {
+      flex: 1; min-width: 260px;
+      border: 2px dashed rgba(201,168,76,0.3);
+      border-radius: 8px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .csv-drop:hover, .csv-drop.drag-over {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.05);
+    }
+    .csv-drop svg { margin: 0 auto 12px; display: block; opacity: 0.5; }
+    .csv-drop p { font-size: 13px; color: rgba(253,246,227,0.5); }
+    .csv-drop strong { color: var(--gold); }
+    #csv-file-input { display: none; }
+
+    .csv-manual { flex: 1; min-width: 260px; }
+    .csv-manual textarea { min-height: 140px; font-family: monospace; font-size: 12px; }
+
+    /* Buttons */
+    .btn {
+      padding: 12px 28px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.3s;
+      font-weight: 600;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #8B6914, var(--gold));
+      color: var(--navy);
+    }
+    .btn-primary:hover { transform: scale(1.03); box-shadow: 0 4px 16px rgba(201,168,76,0.3); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+    }
+    .btn-secondary:hover { background: rgba(201,168,76,0.1); }
+    .btn-sm { padding: 8px 16px; font-size: 11px; letter-spacing: 2px; }
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+
+    /* Results table */
+    .results-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+    }
+    .results-count {
+      font-size: 13px; color: rgba(253,246,227,0.5);
+    }
+    .results-count strong { color: var(--gold); }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 12px 16px;
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--gold); border-bottom: 1px solid rgba(201,168,76,0.2);
+    }
+    td {
+      padding: 12px 16px; font-size: 13px;
+      border-bottom: 1px solid rgba(201,168,76,0.08);
+      vertical-align: middle;
+    }
+    tr:hover td { background: rgba(201,168,76,0.04); }
+    .url-cell {
+      font-family: monospace; font-size: 12px;
+      color: rgba(201,168,76,0.8);
+      max-width: 360px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .copy-btn {
+      padding: 4px 12px;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 4px;
+      color: var(--gold);
+      cursor: pointer;
+      font-size: 11px;
+      font-family: 'Montserrat', sans-serif;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+    .copy-btn.copied { background: rgba(201,168,76,0.2); color: var(--gold-light); }
+
+    .open-btn {
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #8B6914, var(--gold));
+      border: none;
+      border-radius: 4px;
+      color: var(--navy);
+      cursor: pointer;
+      font-size: 11px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+    .open-btn:hover { transform: scale(1.05); }
+
+    .actions-cell { display: flex; gap: 8px; align-items: center; }
+
+    /* Export area */
+    .export-output {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 4px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 12px;
+      color: rgba(201,168,76,0.7);
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      display: none;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 32px; right: 32px;
+      background: rgba(201,168,76,0.15);
+      border: 1px solid var(--gold);
+      border-radius: 4px;
+      padding: 12px 20px;
+      font-size: 13px;
+      color: var(--gold);
+      transform: translateY(100px);
+      transition: transform 0.3s;
+      z-index: 9999;
+    }
+    #toast.show { transform: translateY(0); }
+
+    /* Steps */
+    .steps {
+      display: flex; gap: 0; margin-bottom: 32px; flex-wrap: wrap;
+    }
+    .step {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px;
+      background: rgba(201,168,76,0.05);
+      border: 1px solid rgba(201,168,76,0.15);
+      font-size: 12px; letter-spacing: 1px; color: rgba(253,246,227,0.4);
+    }
+    .step:first-child { border-radius: 4px 0 0 4px; }
+    .step:last-child { border-radius: 0 4px 4px 0; }
+    .step.active { background: rgba(201,168,76,0.12); border-color: var(--gold); color: var(--gold); }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(201,168,76,0.2); color: var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; flex-shrink: 0;
+    }
+    .step.active .step-num { background: var(--gold); color: var(--navy); }
+
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 12px;
+      font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+      background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3);
+    }
+    .badge.confirmed { background: rgba(40,160,80,0.15); color: #4CAF50; border-color: rgba(40,160,80,0.3); }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: rgba(253,246,227,0.2); font-size: 14px;
+    }
+    .empty-state svg { margin: 0 auto 16px; display: block; opacity: 0.3; }
+
+    @media (max-width: 600px) {
+      .container { padding: 20px 12px; }
+      .card { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Panel de Invitaciones</h1>
+    <span>Cumpleanos 50 Anos - Generador de URLs</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step active" id="step-1"><div class="step-num">1</div> Configurar evento</div>
+    <div class="step" id="step-2"><div class="step-num">2</div> Cargar invitados</div>
+    <div class="step" id="step-3"><div class="step-num">3</div> Generar URLs</div>
+    <div class="step" id="step-4"><div class="step-num">4</div> Compartir</div>
+  </div>
+
+  <!-- CARD 1: Event Config -->
+  <div class="card">
+    <div class="card-title">Configuracion del Evento</div>
+    <div class="card-desc">Estos datos se reflejan en la pagina de invitacion (invitation.html).</div>
+
+    <div class="config-grid">
+      <div class="field-group">
+        <label>Nombre del festejado</label>
+        <input type="text" id="cfg-honoree" value="Carlos" placeholder="Nombre" />
+      </div>
+      <div class="field-group">
+        <label>Fecha del evento</label>
+        <input type="text" id="cfg-date" value="25 de Julio" placeholder="25 de Julio" />
+      </div>
+      <div class="field-group">
+        <label>Ano</label>
+        <input type="text" id="cfg-year" value="2026" placeholder="2026" />
+      </div>
+      <div class="field-group">
+        <label>Hora</label>
+        <input type="text" id="cfg-time" value="7:00 PM" placeholder="7:00 PM" />
+      </div>
+      <div class="field-group">
+        <label>Salon / Lugar</label>
+        <input type="text" id="cfg-venue" value="Salon Gran Via" placeholder="Salon Gran Via" />
+      </div>
+      <div class="field-group">
+        <label>Direccion</label>
+        <input type="text" id="cfg-address" value="Av. Principal 123" placeholder="Direccion completa" />
+      </div>
+      <div class="field-group">
+        <label>Codigo de vestimenta</label>
+        <input type="text" id="cfg-dress" value="Elegante" placeholder="Elegante, formal..." />
+      </div>
+      <div class="field-group">
+        <label>WhatsApp confirmaciones (opcional)</label>
+        <input type="text" id="cfg-whatsapp" value="" placeholder="+52 555 000 0000" />
+      </div>
+      <div class="field-group">
+        <label>URL base del sitio (GitHub Pages)</label>
+        <input type="text" id="cfg-base-url" value="" placeholder="https://usuario.github.io/repositorio" />
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveConfig()">Guardar Configuracion</button>
+      <button class="btn btn-secondary" onclick="generateConfigSnippet()">Ver codigo para invitation.html</button>
+    </div>
+    <div class="export-output" id="config-output"></div>
+  </div>
+
+  <!-- CARD 2: Load guests -->
+  <div class="card">
+    <div class="card-title">Cargar Lista de Invitados</div>
+    <div class="card-desc">Sube tu archivo CSV con una columna: <code style="color:var(--gold)">Nombre Completo</code>. Las invitaciones se generan automaticamente al cargar.</div>
+
+    <div class="csv-area">
+      <div class="csv-drop" id="csv-drop" onclick="document.getElementById('csv-file-input').click()">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <p><strong>Haz clic o arrastra</strong> tu archivo CSV aqui</p>
+        <p style="margin-top:8px;font-size:11px;">Una columna: Nombre Completo</p>
+        <input type="file" id="csv-file-input" accept=".csv,.txt" onchange="loadCSVFile(this)"/>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary btn-sm" onclick="downloadSampleCSV()">Descargar plantilla CSV</button>
+    </div>
+  </div>
+
+  <!-- CARD 3: Results -->
+  <div class="card" id="results-card" style="display:none">
+    <div class="results-header">
+      <div>
+        <div class="card-title">URLs Generadas</div>
+        <div class="results-count">
+          <strong id="total-count">0</strong> invitados &bull; Sitio base: <span id="base-url-display" style="color:var(--gold);font-size:12px;"></span>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:0">
+        <button class="btn btn-secondary btn-sm" onclick="copyAllURLs()">Copiar todas las URLs</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportWhatsApp()">Exportar para WhatsApp</button>
+        <button class="btn btn-primary btn-sm" onclick="exportCSVLinks()">Exportar CSV con links</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="results-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>URL de Invitacion</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="results-body"></tbody>
+      </table>
+    </div>
+
+    <div class="export-output" id="export-output"></div>
+  </div>
+
+  <!-- CARD 4: GitHub guide -->
+  <div class="card">
+    <div class="card-title">Como subir a GitHub Pages</div>
+    <div class="card-desc">Pasos para publicar las invitaciones en internet gratis.</div>
+
+    <ol style="padding-left:20px;display:flex;flex-direction:column;gap:12px;font-size:14px;color:rgba(253,246,227,0.7);">
+      <li>Crea una cuenta en <span style="color:var(--gold)">github.com</span> si no tienes una</li>
+      <li>Crea un nuevo repositorio (puede ser privado o publico)</li>
+      <li>Sube los archivos: <span style="color:var(--gold)">invitation.html</span> y el folder completo</li>
+      <li>Ve a <strong style="color:var(--cream)">Settings → Pages → Source: Deploy from branch → main</strong></li>
+      <li>Tu URL base sera: <span style="color:var(--gold)">https://TU-USUARIO.github.io/REPOSITORIO</span></li>
+      <li>Cada invitado recibe: <span style="color:var(--gold)">https://TU-USUARIO.github.io/REPOSITORIO/invitation.html?guest=nombre-apellido</span></li>
+    </ol>
+
+    <div class="btn-row" style="margin-top:20px">
+      <button class="btn btn-secondary" onclick="openGitHubHelp()">Ver guia completa en GitHub</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+let guestList = [];
+let baseURL = '';
+
+// ============================================================
+// CONFIG
+// ============================================================
+function saveConfig() {
+  baseURL = document.getElementById('cfg-base-url').value.trim().replace(/\/$/, '');
+  document.getElementById('base-url-display').textContent = baseURL || 'invitation.html (local)';
+  setStep(2);
+  showToast('Configuracion guardada');
+}
+
+function generateConfigSnippet() {
+  const cfg = {
+    honoree: document.getElementById('cfg-honoree').value,
+    eventDate: document.getElementById('cfg-date').value,
+    eventYear: document.getElementById('cfg-year').value,
+    eventTime: document.getElementById('cfg-time').value,
+    eventVenue: document.getElementById('cfg-venue').value,
+    eventAddress: document.getElementById('cfg-address').value,
+    eventDresscode: document.getElementById('cfg-dress').value,
+    whatsapp: document.getElementById('cfg-whatsapp').value,
+  };
+  const snippet = `// Reemplaza el bloque CONFIG en invitation.html con esto:\nconst CONFIG = ${JSON.stringify(cfg, null, 2)};`;
+  const out = document.getElementById('config-output');
+  out.style.display = 'block';
+  out.textContent = snippet;
+}
+
+// ============================================================
+// GUESTS
+// ============================================================
+function parseAndProcess(raw, filename) {
+  const lines = raw.split('\n').filter(l => l.trim());
+  guestList = lines.map((line, i) => {
+    const fullName = line.split(',')[0].replace(/^"(.*)"$/, '$1').trim();
+    if (!fullName || fullName.toLowerCase() === 'nombre completo') return null;
+    const slug = slugify(fullName);
+    const url = buildURL(slug);
+    return { id: i+1, fullName, slug, url };
+  }).filter(Boolean);
+
+  renderResults();
+  setStep(3);
+  document.getElementById('results-card').style.display = 'block';
+  document.getElementById('total-count').textContent = guestList.length;
+  baseURL = document.getElementById('cfg-base-url').value.trim().replace(/\/$/, '');
+  document.getElementById('base-url-display').textContent = baseURL || 'invitation.html (local)';
+  showToast(`${guestList.length} invitados cargados${filename ? ' de ' + filename : ''}`);
+
+  // Update drop zone label
+  const drop = document.getElementById('csv-drop');
+  drop.querySelector('p').innerHTML = `<strong style="color:var(--gold)">${filename || 'CSV cargado'}</strong> — ${guestList.length} invitados`;
+}
+
+function loadCSVFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => parseAndProcess(e.target.result, file.name);
+  reader.readAsText(file, 'UTF-8');
+}
+
+const dropZone = document.getElementById('csv-drop');
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => parseAndProcess(ev.target.result, file.name);
+    reader.readAsText(file, 'UTF-8');
+  }
+});
+
+
+function slugify(name) {
+  return name
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+function buildURL(slug) {
+  const base = document.getElementById('cfg-base-url').value.trim().replace(/\/$/, '');
+  const page = 'invitation.html';
+  if (base) return `${base}/${page}?guest=${slug}`;
+  return `invitation.html?guest=${slug}`;
+}
+
+function renderResults() {
+  const tbody = document.getElementById('results-body');
+  tbody.innerHTML = '';
+  guestList.forEach(g => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:rgba(201,168,76,0.4);font-size:12px">${g.id}</td>
+      <td style="font-weight:600">${g.fullName}</td>
+      <td class="url-cell" title="${g.url}">${g.url}</td>
+      <td class="actions-cell">
+        <button class="copy-btn" onclick="copyURL('${g.url}', this)">Copiar</button>
+        <button class="open-btn" onclick="window.open('${g.url}','_blank')">Ver</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function buildWAMessage(g) {
+  const honoree = document.getElementById('cfg-honoree').value;
+  const date = document.getElementById('cfg-date').value;
+  const year = document.getElementById('cfg-year').value;
+  const venue = document.getElementById('cfg-venue').value;
+  return `Hola ${g.fullName}! Te invitamos a celebrar los 50 anos de ${honoree}. Fecha: ${date} ${year}. Lugar: ${venue}. Tu invitacion personal: ${g.url}`;
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function copyURL(url, btn) {
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = 'Copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyAllURLs() {
+  const text = guestList.map(g => `${g.fullName}: ${g.url}`).join('\n');
+  navigator.clipboard.writeText(text).then(() => showToast('Todas las URLs copiadas'));
+}
+
+function exportWhatsApp() {
+  const honoree = document.getElementById('cfg-honoree').value;
+  const date = document.getElementById('cfg-date').value;
+  const year = document.getElementById('cfg-year').value;
+  const venue = document.getElementById('cfg-venue').value;
+
+  const text = guestList.map(g =>
+    `*Para ${g.fullName}:*\nHola! Te invitamos a celebrar los 50 anos de ${honoree}.\nFecha: ${date} ${year}\nLugar: ${venue}\nTu invitacion: ${g.url}`
+  ).join('\n\n---\n\n');
+
+  const out = document.getElementById('export-output');
+  out.style.display = 'block';
+  out.textContent = text;
+  navigator.clipboard.writeText(text).then(() => showToast('Mensajes copiados al portapapeles'));
+  setStep(4);
+}
+
+function exportCSVLinks() {
+  const rows = ['Nombre,URL'];
+  guestList.forEach(g => rows.push(`"${g.fullName}","${g.url}"`));
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'invitaciones-50-anos.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exportado');
+}
+
+function sendWhatsApp(phone, msg) {
+  const clean = phone.replace(/[^0-9]/g, '');
+  window.open(`https://wa.me/${clean}?text=${msg}`, '_blank');
+}
+
+function downloadSampleCSV() {
+  const content = `Nombre Completo
+Carlos Rodriguez
+Ana Martinez
+Juan Perez Lopez
+Maria Garcia Ruiz`;
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'plantilla-invitados.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Plantilla descargada');
+}
+
+function openGitHubHelp() {
+  window.open('https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site', '_blank');
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function setStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById(`step-${i}`).classList.toggle('active', i <= n);
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
