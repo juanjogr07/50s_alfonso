@@ -1307,6 +1307,49 @@
   <h2 class="section-title">Detalles del Evento</h2>
   <p class="section-subtitle" id="event-guest-name">Te esperamos con mucho carino</p>
 
+  <!-- Mensaje de familia -->
+  <div style="
+    max-width: 620px;
+    margin: 0 auto 40px;
+    padding: 28px 36px;
+    background: linear-gradient(135deg, rgba(229,193,88,0.07) 0%, rgba(179,143,54,0.04) 100%);
+    border: 1px solid rgba(229,193,88,0.25);
+    border-radius: 12px;
+    text-align: center;
+    position: relative;
+  ">
+    <!-- comillas decorativas -->
+    <span style="
+      position:absolute; top:-18px; left:50%; transform:translateX(-50%);
+      font-family:'Cormorant Garamond',serif; font-size:72px; line-height:1;
+      color:rgba(229,193,88,0.25); pointer-events:none; user-select:none;
+    ">&ldquo;</span>
+    <p style="
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(17px,2.2vw,22px);
+      font-style:italic;
+      color:var(--champagne);
+      line-height:1.8;
+      margin-bottom:18px;
+    ">
+      Su esposa, su hijo y sus hijas tienen el honor y el inmenso gusto<br>
+      de invitarte a celebrar este momento tan especial.<br>
+      Tu presencia hara esta noche aun mas memorable.
+    </p>
+    <div style="
+      width:50px; height:1px;
+      background:linear-gradient(90deg,transparent,var(--gold),transparent);
+      margin:0 auto 14px;
+    "></div>
+    <p style="
+      font-family:'Montserrat',sans-serif;
+      font-size:12px;
+      letter-spacing:3px;
+      text-transform:uppercase;
+      color:rgba(229,193,88,0.6);
+    ">Con todo nuestro amor</p>
+  </div>
+
   <div class="ticket-pass">
     
     <!-- Left Area: Details Grid -->
@@ -1346,15 +1389,18 @@
         <div class="detail-value" id="event-venue">Salon Dorado</div>
         <div class="detail-sub" id="event-address">Direccion por confirmar</div>
       </div>
-      <!-- Dress code -->
-      <div class="detail-item">
-        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18 6 L10 16 L14 16 L14 42 L34 42 L34 16 L38 16 L30 6 Q26 10 24 10 Q22 10 18 6Z" stroke="url(#goldGradient)" stroke-width="1.5" fill="rgba(229,193,88,0.1)"/>
-          <line x1="24" y1="10" x2="24" y2="20" stroke="var(--gold-light)" stroke-width="1" stroke-dasharray="2,2"/>
+      <!-- Envelope rain -->
+      <div class="detail-item" style="position:relative;overflow:hidden;">
+        <canvas id="envelope-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:1;">
+          <rect x="4" y="12" width="40" height="28" rx="3" stroke="url(#goldGradient)" stroke-width="1.5" fill="rgba(229,193,88,0.08)"/>
+          <path d="M4 15 L24 28 L44 15" stroke="url(#goldGradient)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M4 40 L18 27" stroke="url(#goldGradient)" stroke-width="1" opacity="0.5"/>
+          <path d="M44 40 L30 27" stroke="url(#goldGradient)" stroke-width="1" opacity="0.5"/>
         </svg>
-        <div class="detail-label">Codigo de Vestimenta</div>
-        <div class="detail-value" id="event-dresscode">Elegante</div>
-        <div class="detail-sub">Colores oscuros y dorado</div>
+        <div class="detail-label" style="position:relative;z-index:1;">Tu Invitacion</div>
+        <div class="detail-value" style="position:relative;z-index:1;">Sobre Dorado</div>
+        <div class="detail-sub" style="position:relative;z-index:1;">Confirma tu asistencia</div>
       </div>
     </div>
 
@@ -1481,8 +1527,102 @@ function applyGuestName() {
   document.getElementById('event-time').textContent = CONFIG.eventTime;
   document.getElementById('event-venue').textContent = CONFIG.eventVenue;
   document.getElementById('event-address').textContent = CONFIG.eventAddress;
-  document.getElementById('event-dresscode').textContent = CONFIG.eventDresscode;
 }
+
+// ============================================================
+// ENVELOPE RAIN
+// ============================================================
+function initEnvelopeRain() {
+  const canvas = document.getElementById('envelope-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const envelopes = [];
+  let raf;
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth  || 200;
+    canvas.height = canvas.offsetHeight || 160;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function makeEnvelope() {
+    return {
+      x: Math.random() * (canvas.width + 40) - 20,
+      y: -30,
+      size: 14 + Math.random() * 14,
+      speed: 0.5 + Math.random() * 1,
+      angle: -0.3 + Math.random() * 0.6,
+      rot: (Math.random() - 0.5) * 0.04,
+      rotAngle: (Math.random() - 0.5) * 0.4,
+      alpha: 0.25 + Math.random() * 0.45,
+      open: Math.random() > 0.5,
+    };
+  }
+
+  for (let i = 0; i < 12; i++) {
+    const e = makeEnvelope();
+    e.y = Math.random() * canvas.height;
+    envelopes.push(e);
+  }
+
+  function drawEnvelope(e) {
+    ctx.save();
+    ctx.translate(e.x, e.y);
+    ctx.rotate(e.rotAngle);
+    ctx.globalAlpha = e.alpha;
+    const s = e.size;
+    const w = s * 1.5, h = s;
+    ctx.strokeStyle = '#E5C158';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = 'rgba(229,193,88,0.07)';
+    // body
+    ctx.beginPath();
+    ctx.roundRect(-w/2, -h/2, w, h, 2);
+    ctx.fill();
+    ctx.stroke();
+    // flap (V shape from top)
+    ctx.beginPath();
+    if (e.open) {
+      ctx.moveTo(-w/2, -h/2);
+      ctx.lineTo(0, -h/2 - h*0.55);
+      ctx.lineTo(w/2, -h/2);
+    } else {
+      ctx.moveTo(-w/2, -h/2);
+      ctx.lineTo(0, h*0.1);
+      ctx.lineTo(w/2, -h/2);
+    }
+    ctx.stroke();
+    // bottom V
+    ctx.beginPath();
+    ctx.moveTo(-w/2, h/2);
+    ctx.lineTo(0, h*0.05);
+    ctx.lineTo(w/2, h/2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    envelopes.forEach(e => {
+      e.y += e.speed;
+      e.x += e.angle * 0.4;
+      e.rotAngle += e.rot;
+      if (e.y > canvas.height + 30) {
+        Object.assign(e, makeEnvelope());
+      }
+      drawEnvelope(e);
+    });
+    raf = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// Start envelope rain when section-details is visible
+const _envObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) initEnvelopeRain();
+}, { threshold: 0.3 });
+_envObs.observe(document.getElementById('section-details'));
 
 // ============================================================
 // INTRO SCREEN
