@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>50 Anos - Celebracion</title>
+  <title>50 Años - Celebracion</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet" />
@@ -1221,8 +1221,8 @@
       </svg>
     </div>
 
-    <h2 class="celebration-big">Feliz Cumpleanos!</h2>
-    <p class="celebration-sub" id="celebration-guest-name">Celebrando tus 50 anos maravillosos</p>
+    <h2 class="celebration-big">Feliz Cumpleaños!</h2>
+    <p class="celebration-sub" id="celebration-guest-name">Celebrando tus 50 años maravillosos</p>
 
     <!-- Wine glasses -->
     <div class="wine-row">
@@ -1253,7 +1253,7 @@
       </svg>
     </div>
 
-    <p class="cheers-text">Salud por 50 anos extraordinarios</p>
+    <p class="cheers-text">Salud por 50 años extraordinarios</p>
 
     <!-- Gifts -->
     <div class="gifts-row">
@@ -1463,14 +1463,14 @@ const CONFIG = {
     { year: "1994", event: "La juventud y los grandes pasos", desc: "Graduacion y nuevos horizontes", icon: "trophy" },
     { year: "2001", event: "Nuevas aventuras", desc: "Amor, familia y crecimiento", icon: "gift" },
     { year: "2010", event: "El lider que todos admiran", desc: "Logros y exitos profesionales", icon: "crown" },
-    { year: "2026", event: "50 anos de historia increible", desc: "Hoy celebramos al hombre que eres", icon: "celebrate" },
+    { year: "2026", event: "50 años de historia increible", desc: "Hoy celebramos al hombre que eres", icon: "celebrate" },
   ],
 
   messages: [
-    { text: "Eres la persona mas increible que he conocido. Que estos 50 anos sean solo el comienzo de lo mejor.", author: "Ana", relation: "Esposa" },
+    { text: "Eres la persona mas increible que he conocido. Que estos 50 años sean solo el comienzo de lo mejor.", author: "Ana", relation: "Esposa" },
     { text: "Papa, eres nuestro heroe todos los dias. Gracias por todo lo que nos has dado.", author: "Los hijos", relation: "Familia" },
-    { text: "Cincuenta anos de amistad y contando. No hay nadie mejor con quien compartir este camino.", author: "Roberto", relation: "Amigo de toda la vida" },
-    { text: "Tu fortaleza y sabiduria son una inspiracion para todos. Feliz cumpleanos!", author: "El equipo", relation: "Companeros de trabajo" },
+    { text: "Cincuenta años de amistad y contando. No hay nadie mejor con quien compartir este camino.", author: "Roberto", relation: "Amigo de toda la vida" },
+    { text: "Tu fortaleza y sabiduria son una inspiracion para todos. Feliz cumpleaños!", author: "El equipo", relation: "Companeros de trabajo" },
   ],
 
   gallery: 9, // numero de slots en la galeria
@@ -1515,10 +1515,10 @@ function applyGuestName() {
     document.getElementById('intro-title-container').style.display = 'block';
     document.getElementById('guest-name-hero').textContent = h;
     document.getElementById('guest-invite-text').textContent = `${guestNameFormatted}, estas cordialmente invitado`;
-    document.getElementById('celebration-guest-name').textContent = `${guestNameFormatted}, celebrando tus 50 anos maravillosos`;
+    document.getElementById('celebration-guest-name').textContent = `${guestNameFormatted}, celebrando tus 50 años maravillosos`;
     document.getElementById('event-guest-name').textContent = `${guestNameFormatted}, te esperamos con mucho carino`;
     document.getElementById('confirm-guest-text').textContent = `${guestNameFormatted}, nos encantaria contar contigo`;
-    document.title = `Cumpleanos ${h} - Invitacion para ${guestNameFormatted}`;
+    document.title = `Cumpleaños ${h} - Invitación para ${guestNameFormatted}`;
   } else {
     document.getElementById('guest-name-hero').textContent = h;
   }
@@ -1690,7 +1690,7 @@ function buildTimeline() {
 // ============================================================
 // GALLERY
 // ============================================================
-const GALLERY_DECADES = ['Infancia', 'Anos 80', 'Anos 90', 'Familia', 'Logros', 'Viajes', 'Amigos', 'Trabajo', 'Hoy'];
+const GALLERY_DECADES = ['Infancia', 'Años 80', 'Años 90', 'Familia', 'Logros', 'Viajes', 'Amigos', 'Trabajo', 'Hoy'];
 function buildGallery() {
   const grid = document.getElementById('gallery-grid');
   for (let i = 0; i < CONFIG.gallery; i++) {
@@ -2093,8 +2093,8 @@ function confirmAttendance(attending) {
   // WhatsApp notification (optional)
   if (CONFIG.whatsapp) {
     const msg = attending
-      ? `${name} CONFIRMA asistencia al cumpleanos de ${CONFIG.honoree}`
-      : `${name} NO puede asistir al cumpleanos de ${CONFIG.honoree}`;
+      ? `${name} CONFIRMA asistencia al cumpleaños de ${CONFIG.honoree}`
+      : `${name} NO puede asistir al cumpleaños de ${CONFIG.honoree}`;
     window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 }
